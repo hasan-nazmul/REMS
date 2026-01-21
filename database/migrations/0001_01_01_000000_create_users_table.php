@@ -15,19 +15,13 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('password');
             
-            // Railway Specific Fields
-            $table->string('designation')->nullable(); // e.g. "Chief Engineer"
-            $table->enum('role', ['super_admin', 'office_admin', 'employee'])->default('employee');
-            $table->boolean('is_active')->default(true); // For releasing employees
-            
-            // Link user to an Office
-            $table->foreignId('office_id')
-                ->nullable()
-                ->constrained('offices')
-                ->onDelete('set null');
+            // THESE LINES MUST BE HERE:
+            $table->string('role')->default('user');
+            $table->foreignId('office_id')->nullable()->constrained('offices')->onDelete('set null');
 
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
             $table->rememberToken();
             $table->timestamps();
         });

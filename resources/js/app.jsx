@@ -4,20 +4,32 @@ import '../sass/app.scss';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Dashboard from './pages/Dashboard';
+import Files from './pages/Files.jsx';
+import FileCreate from './pages/FileCreate.jsx';
+
+// Import your pages
+import Login from './pages/Login.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import Users from './pages/Users.jsx';
+import UserCreate from './pages/UserCreate.jsx';
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* We will add a Login route here later */}
-                <Route path="/" element={<Dashboard />} />
+                <Route path="/" element={<Login />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/users" element={<Users />} />
+                <Route path="/users/create" element={<UserCreate />} />
+                <Route path="/files" element={<Files />} />
+                <Route path="/files/create" element={<FileCreate />} />
             </Routes>
         </BrowserRouter>
     );
 }
 
-// It must match 'app' from the HTML above
+// Logic to attach React to the HTML
 if (document.getElementById('app')) {
     const Index = ReactDOM.createRoot(document.getElementById("app"));
     Index.render(
