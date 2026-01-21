@@ -57,10 +57,11 @@ const Files = () => {
                                 files.map(file => (
                                     <tr key={file.id}>
                                         <td>
-                                            <strong>{file.subject}</strong>
-                                            <div className="text-muted small text-truncate" style={{maxWidth: '300px'}}>
-                                                {file.description}
-                                            </div>
+                                            {/* Make the subject clickable */}
+                                            <Link to={`/files/${file.id}`} className="text-decoration-none fw-bold">
+                                                {file.subject}
+                                            </Link>
+                                            <div className="text-muted small...">{file.description}</div>
                                         </td>
                                         <td>{getPriorityBadge(file.priority)}</td>
                                         <td><span className="badge bg-info text-dark">{file.status}</span></td>

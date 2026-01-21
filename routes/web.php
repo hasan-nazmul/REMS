@@ -2,41 +2,37 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
-use App\Models\File; // <--- THIS WAS MISSING!
+use App\Models\File;
 
+// 1. Main Entry Point
 Route::get('/', function () {
     return view('welcome');
 });
 
-// 1. Debug Route for Users
-Route::get('/debug-users', function () {
-    return User::with('office')->get();
-});
-
-// 2. Debug Route for Files (The one failing)
-Route::get('/debug-file', function () {
-    // Get the first user (Admin)
-    $user = User::first(); 
+// 2. Your Debug Tools (Keep these for now, they are useful!)
+Route::get('/debug-fix', function () {
+    // 1. Delete files with no office
+    $deleted = \App\Models\File::whereNull('current_office_id')->delete();
     
-    if (!$user) {
-        return "Error: No users found in database. Run migration/seed.";
-    }
+    // 2. Check remaining files
+    $count = \App\Models\File::count();
 
-    // Create a dummy file
-    $file = File::create([
-        'subject' => 'Test File ' . rand(1, 100),
-        'description' => 'This is a test file created via debug route.',
-        'priority' => 'normal',
-        'status' => 'open',
-        'origin_office_id' => $user->office_id,
-        'current_office_id' => $user->office_id,
-        'creator_user_id' => $user->id,
-    ]);
-
-    return $file;
+    return "✅ Cleanup Complete! Deleted $deleted ghost files. You have $count valid files remaining.";
 });
 
-// React Catch-all Route (Must be last)
+Route::get('/debug-move', function () {
+    if (!class_exists(\App\Models\FileMovement::class)) return "❌ Error: Model missing.";
+    $user = User::first();
+    $file = File::first();
+    if (!$user || !$file) return "❌ Error: Missing data.";
+    return "✅ Ready to move file: " . $file->subject;
+});
+
+// ----------------------------------------------------------------
+// 3. THE CRITICAL FIX (The Catch-All Route)
+// ----------------------------------------------------------------
+// This tells Laravel: "For any other URL (like /dashboard, /files), 
+// don't show 404. Just load the React app."
 Route::get('/{any}', function () {
     return view('welcome');
 })->where('any', '.*');

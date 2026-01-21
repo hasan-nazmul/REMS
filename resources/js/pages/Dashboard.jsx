@@ -1,90 +1,77 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import Layout from '../components/Layout.jsx';
 
 const Dashboard = () => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
+    const [stats, setStats] = useState({ pending: 0, processed: 0 });
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            navigate('/'); // Redirect to login if no token
-        } else {
-            // Fetch the logged-in user's details
-            axios.get('/api/user')
-                .then(res => {
-                    setUser(res.data);
-                })
-                .catch(err => {
-                    console.error("Failed to fetch user:", err);
-                    // If the token is invalid, clear it and kick them out
-                    localStorage.removeItem('token');
-                    navigate('/');
-                });
-        }
+        // Fetch User Data
+        axios.get('/api/user')
+            .then(res => setUser(res.data))
+            .catch(() => navigate('/'));
+
+        // Optional: Fetch quick stats (We can implement the API for this later)
+        // axios.get('/api/stats').then(res => setStats(res.data));
     }, [navigate]);
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/');
-    };
-
-    if (!user) return <div className="text-center mt-5">Loading Dashboard...</div>;
+    if (!user) return null; // Or a loading spinner
 
     return (
-        <div className="container mt-4">
-            {/* --- Top Navbar --- */}
-            <nav className="navbar navbar-light bg-light rounded shadow-sm mb-4 p-3 d-flex justify-content-between">
-                <span className="navbar-brand mb-0 h1">🚂 REMS - Railway Estate Management</span>
-                <button onClick={handleLogout} className="btn btn-outline-danger btn-sm">Logout</button>
-            </nav>
-
-            {/* --- Welcome & Actions Card --- */}
-            <div className="card shadow-sm mb-4">
-                <div className="card-body">
-                    <h3 className="card-title">Welcome, {user.name}!</h3>
-                    <p className="text-muted">
-                        <strong>Role:</strong> <span className="badge bg-info text-dark">{user.role}</span> &nbsp;|&nbsp; 
-                        <strong>Office:</strong> {user.office ? user.office.name : <span className="text-danger">Not Assigned</span>}
-                    </p>
-                    
-                    <hr />
-
-                    {/* --- ACTION BUTTONS --- */}
-                    <div className="d-flex gap-2">
-                        {/* 1. The New "My Files" Button (For everyone) */}
-                        <Link to="/files" className="btn btn-warning text-dark shadow-sm">
-                            📂 My Files (Dak)
-                        </Link>
-
-                        {/* 2. The User Management Button (Useful for Admins) */}
-                        <Link to="/users" className="btn btn-primary shadow-sm">
-                            👥 Manage Employees
-                        </Link>
+        <Layout title="Dashboard" user={user}>
+            <div className="row g-4">
+                {/* Welcome Card */}
+                <div className="col-12">
+                    <div className="alert alert-primary d-flex align-items-center" role="alert">
+                        <div className="fs-1 me-3">👋</div>
+                        <div>
+                            <h4 className="alert-heading mb-0">Welcome back, {user.name}!</h4>
+                            <p className="mb-0">You are currently logged in as <strong>{user.role}</strong> at <strong>{user.office?.name}</strong>.</p>
+                        </div>
                     </div>
                 </div>
+
+                {/* Quick Actions */}
+                <div className="col-md-4">
+                    <div className="card h-100 border-0 shadow-sm bg-warning bg-gradient text-dark">
+                        <div className="card-body text-center p-4">
+                            <h1 className="display-4">📂</h1>
+                            <h5>My Inbox</h5>
+                            <p className="small">Check pending files on your desk.</p>
+                            <Link to="/files" className="btn btn-light w-100 stretched-link fw-bold">View Files</Link>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="col-md-4">
+                    <div className="card h-100 border-0 shadow-sm bg-success bg-gradient text-white">
+                        <div className="card-body text-center p-4">
+                            <h1 className="display-4">➕</h1>
+                            <h5>New File</h5>
+                            <p className="small">Initiate a new Dak or proposal.</p>
+                            <Link to="/files/create" className="btn btn-light w-100 stretched-link fw-bold text-success">Create File</Link>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Only Show for Admin/Head */}
+                {(user.role === 'admin' || user.role === 'office_head') && (
+                    <div className="col-md-4">
+                        <div className="card h-100 border-0 shadow-sm bg-secondary bg-gradient text-white">
+                            <div className="card-body text-center p-4">
+                                <h1 className="display-4">🗄️</h1>
+                                <h5>Archive</h5>
+                                <p className="small">Search global file history.</p>
+                                <Link to="/archive" className="btn btn-light w-100 stretched-link fw-bold text-secondary">Search Archive</Link>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
-
-            {/* --- Dashboard Widgets (Placeholders for now) --- */}
-            <div className="row">
-                <div className="col-md-6 mb-3">
-                    <div className="card p-3 shadow-sm h-100">
-                        <h5 className="text-primary">📌 Recent Notifications</h5>
-                        <p className="text-muted small">System is running smoothly. No new alerts.</p>
-                    </div>
-                </div>
-                <div className="col-md-6 mb-3">
-                    <div className="card p-3 shadow-sm h-100">
-                        <h5 className="text-success">📊 Quick Stats</h5>
-                        <ul className="list-unstyled">
-                            <li><strong>System Status:</strong> <span className="badge bg-success">Online</span></li>
-                            <li><strong>Your Office ID:</strong> {user.office_id || 'N/A'}</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </Layout>
     );
 };
 

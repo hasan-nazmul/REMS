@@ -14,19 +14,25 @@ class File extends Model
         'description',
         'priority',
         'status',
-        'origin_office_id',
         'current_office_id',
-        'creator_user_id'
+        'created_by_user_id'
     ];
 
-    // Relationships
+    // 1. Who created this file?
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    // 2. Where is this file right now? (The missing piece!)
     public function currentOffice()
     {
         return $this->belongsTo(Office::class, 'current_office_id');
     }
 
-    public function creator()
+    // 3. What is the history of this file?
+    public function movements()
     {
-        return $this->belongsTo(User::class, 'creator_user_id');
+        return $this->hasMany(FileMovement::class)->latest();
     }
 }
